@@ -39,15 +39,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
     //timer
 
-    const deadline = '2020-05-11';
+    const deadline = '2020-09-11';
 
     function getTimeRemaining(endtime) {
         const t = Date.parse(endtime) - Date.parse(new Date()),
-              days = Math.floor(t / (1000 * 60 * 60 * 24)),
-              hours = Math.floor((t / 1000 * 60 * 60) % 24),
-              minutes = Math.floor((t / 1000 / 60) % 60),
-              seconds = Math.floor((t / 1000) % 60);
-
+            days = Math.floor( (t/(1000*60*60*24)) ),
+            seconds = Math.floor( (t/1000) % 60 ),
+            minutes = Math.floor( (t/1000/60) % 60 ),
+            hours = Math.floor( (t/(1000*60*60) % 24) );
 
         return {
             'total': t,
@@ -56,39 +55,95 @@ window.addEventListener('DOMContentLoaded', () => {
             'minutes': minutes,
             'seconds': seconds
         };
+    }
 
-        function getZero(num) {
-            if (num >= 0 && num < 7) {
-                return `0${num}`;
-            } else {
-                return num;
-            }
+    function getZero(num){
+        if (num >= 0 && num < 10) { 
+            return '0' + num;
+        } else {
+            return num;
         }
+    }
 
-        function setclock(selector, endTime) {
-            const timer = document.querySelector(selector),
-                  days = timer.querySelector('#days'),
-                  hours = timer.querySelector('#hours'),
-                  minutes = timer.querySelector('#minutes'),
-                  seconds = timer.querySelector('#seconds'),
-                  timeInterval = setInterval(updateClock, 1000);
+    function setClock(selector, endtime) {
 
-                updateClock();//чтобы при обновлении страницы таймер не обновлялся
+        const timer = document.querySelector(selector),
+            days = timer.querySelector("#days"),
+            hours = timer.querySelector('#hours'),
+            minutes = timer.querySelector('#minutes'),
+            seconds = timer.querySelector('#seconds'),
+            timeInterval = setInterval(updateClock, 1000);
 
-            function updateClock() {
-                const t = getTimeRemaining(endTime);
+        updateClock();
 
-                days.innerHTML = getZero(t.days);
-                hours.innerHTML = getZero(t.hours);
-                minutes.innerHTML = getZero(t.hours);
-                seconds.innerHTML = getZero(t.seconds);
+        function updateClock() {
+            const t = getTimeRemaining(endtime);
 
-                if (t.total <= 0) {
-                    clearInterval(timeInterval);
-                }
+            days.innerHTML = getZero(t.days);
+            hours.innerHTML = getZero(t.hours);
+            minutes.innerHTML = getZero(t.minutes);
+            seconds.innerHTML = getZero(t.seconds);
+
+            if (t.total <= 0) {
+                clearInterval(timeInterval);
             }
         }
     }
 
-    setclock('.timer', deadline);
+    setClock('.timer', deadline);
+
+ // Modal
+
+    const modalTrigger = document.querySelectorAll('[data-modal]'),
+            modal = document.querySelector('.modal'),
+            modalCloseBtn = document.querySelector('[data-close]');
+
+        function openModal() {
+            modal.classList.add('show');
+            modal.classList.remove('hide');
+        // Либо вариант с toggle - но тогда назначить класс в верстке
+            document.body.style.overflow = 'hidden';
+            clearInterval(modalTimerID);
+        }
+
+
+    modalTrigger.forEach(btn => {
+        btn.addEventListener('click', openModal);
 });
+
+    function closeModal() {
+        modal.classList.add('hide');
+        modal.classList.remove('show');
+        // Либо вариант с toggle - но тогда назначить класс в верстке
+        document.body.style.overflow = '';
+}
+
+    modalCloseBtn.addEventListener('click', closeModal);
+
+modal.addEventListener('click', (e) => {
+ if (e.target === modal) {
+     closeModal();
+ }
+});
+
+document.addEventListener('keydown', (e) => {
+ if (e.code === "Escape" && modal.classList.contains('show')) { 
+     closeModal();
+ }
+});
+
+const modalTimerID = setTimeout(openModal, 3000);
+
+//проверка скролла
+function showModalByScroll() {
+    if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight )
+            {openModal();
+            window.removeEventListener('scroll', showModalByScroll);//только один раз при пролистывании вниз покажется модальное окно
+            }
+    }
+
+
+//проверка скролла
+    window.addEventListener('scroll', showModalByScroll);
+});
+
